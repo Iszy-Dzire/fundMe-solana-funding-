@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoFund - Multi-Chain Support</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- WalletConnect SDK -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
+    <!-- Solana Web3 -->
+    <script src="https://unpkg.com/@solana/web3.js@1.70.1/lib/index.iife.min.js"></script>
+    <!-- Phantom wallet adapter -->
+    <script src="https://unpkg.com/@solana/wallet-adapter-phantom/lib/index.iife.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <i class="fas fa-wallet logo-icon"></i>
+                <span>CryptoFund</span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Dashboard</a></li>
+                    <li><a href="#">Transactions</a></li>
+                    <li><a href="#">Support</a></li>
+                </ul>
+            </nav>
+            <div class="wallet-info">
+                <div id="networkIndicator" class="network-indicator" style="display: none;">
+                    <div class="network-dot" id="networkDot"></div>
+                    <span id="networkName">Network</span>
+                </div>
+                <button id="connectWallet" class="wallet-connect">
+                    <i class="fas fa-plug"></i>
+                    <span>Connect Wallet</span>
+                </button>
+                <button id="disconnectWallet" class="wallet-disconnect" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button id="copyAddress" class="copy-address" style="display: none;">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <h1>Fund Your Crypto Wallet</h1>
+            <p>Connect your wallet to supported networks and add funds using test tokens. Experience real blockchain transactions.</p>
+            
+            <div class="network-selector">
+                <button id="ethereumBtn" class="network-btn ethereum active">
+                    <i class="fab fa-ethereum"></i>
+                    Ethereum
+                </button>
+                <button id="solanaBtn" class="network-btn solana">
+                    <i class="fas fa-bolt"></i>
+                    Solana
+                </button>
+            </div>
+            
+            <div id="ethereumAlert" class="testnet-alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <h3>Using Sepolia Testnet</h3>
+                    <p>This application uses the Sepolia test network. You'll need test ETH from a Sepolia faucet to perform transactions.</p>
+                    <a href="https://cloud.google.com/application/web3/faucet/ethereum/sepolia" class="faucet-link" target="_blank">Get Sepolia Test ETH</a>
+                </div>
+            </div>
+            
+            <div id="solanaAlert" class="testnet-alert" style="display: none;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <h3>Using Solana Devnet</h3>
+                    <p>This application uses the Solana devnet. You'll need test SOL from a Solana faucet to perform transactions.</p>
+                    <a href="https://solfaucet.com/" class="faucet-link" target="_blank">Get Solana Test SOL</a>
+                </div>
+            </div>
+        </section>
+
+        <div class="main-content">
+            <div class="card">
+                <h2><i class="fas fa-coins"></i> Your Balance</h2>
+                <div id="balance" class="balance">0 ETH</div>
+                
+                <h2><i class="fas fa-money-bill-wave"></i> Add Funds</h2>
+                <div class="currency-selector">
+                    <div class="currency-option active" data-currency="ETH">ETH</div>
+                    <div class="currency-option" data-currency="TEST">TEST</div>
+                </div>
+                
+                <input type="number" id="amountInput" class="amount-input" placeholder="Enter amount" min="0" step="0.001">
+                
+                <div id="gasEstimate" class="gas-estimate">
+                    Estimated gas: <span id="gasAmount">0</span> ETH
+                </div>
+                
+                <button id="fundBtn" class="fund-btn" disabled>Fund Wallet</button>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-history"></i> Recent Transactions</h2>
+                <div id="transactionsList" class="transactions-list">
+                    <div class="transaction">
+                        <div class="transaction-details">
+                            <div class="transaction-icon income">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="transaction-info">
+                                <div class="transaction-title">No transactions yet</div>
+                                <div class="transaction-date">Connect your wallet to see transactions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="walletModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-wallet"></i> Connect Wallet</h2>
+            <p>Select your wallet provider to connect</p>
+            
+            <div id="ethereumWallets" class="wallet-options">
+                <div class="wallet-option" data-wallet="metamask">
+                    <i class="fab fa-ethereum"></i>
+                    <div>MetaMask</div>
+                </div>
+                <div class="wallet-option walletconnect" data-wallet="walletconnect">
+                    <i class="fas fa-wallet"></i>
+                    <div>WalletConnect</div>
+                </div>
+            </div>
+            
+            <div id="solanaWallets" class="solana-options" style="display: none;">
+                <div class="solana-wallet-option" data-wallet="phantom">
+                    <img src="https://phantom.imgix.net/logo.svg" alt="Phantom Wallet">
+                    <div>Phantom</div>
+                </div>
+                <div class="solana-wallet-option" data-wallet="solflare">
+                    <img src="https://solflare.com/assets/logo-square.png" alt="Solflare Wallet">
+                    <div>Solflare</div>
+                </div>
+            </div>
+            
+            <div id="walletConnectQr" style="display: none;">
+                <div class="walletconnect-instructions">
+                    Scan this QR code with your mobile wallet app to connect
+                </div>
+                <div class="qr-code-container">
+                    <div id="qrcode"></div>
+                </div>
+            </div>
+            
+            <button class="wallet-connect" id="modalConnect" style="display: none;">
+                <i class="fas fa-link"></i>
+                Connect Wallet
+            </button>
+        </div>
+    </div>
+
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-spinner fa-spin" id="transactionSpinner"></i> <span id="transactionTitle">Processing Transaction</span></h2>
+            
+            <div id="pendingStatus" class="status pending">
+                <i class="fas fa-clock"></i>
+                <span>Waiting for confirmation in your wallet...</span>
+            </div>
+            
+            <div id="successStatus" class="status success" style="display: none;">
+                <i class="fas fa-check-circle"></i>
+                <span>Transaction confirmed! Funding complete.</span>
+            </div>
+            
+            <div id="errorStatus" class="status error" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorMessage">Transaction failed. Please try again.</span>
+            </div>
+            
+            <p id="transactionText">Please confirm the transaction in your wallet to complete the funding process.</p>
+            
+            <div id="transactionHash" class="transaction-hash" style="display: none;"></div>
+            <a id="explorerLink" class="view-explorer" target="_blank" style="display: none;">View on Explorer</a>
+            
+            <button class="fund-btn" id="closeTransaction">Done</button>
+        </div>
+    </div>
+
+    <footer class="container">
+        <p>This is a real application connected to blockchain testnets. Real transactions will occur but using test tokens.</p>
+        <p>© 2023 CryptoFund Demo. All rights reserved.</p>
+    </footer>
+
+    <!-- Web3 library for blockchain interaction -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.0/dist/web3.min.js"></script>
+    <!-- QR Code generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    
+    <!-- Custom JavaScript files -->
+    <script src="js/utils.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/ethereum.js"></script>
+    <script src="js/solana.js"></script>
+    <script src="js/walletconnect.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
